@@ -40,6 +40,7 @@ using CSV
 using Polylogarithms
 using SparseArrays
 using OffsetArrays
+using Base.Threads
 
 I = sparse([1.0+0.0im 0.0; 0.0 1.0+0.0im])
 X = sparse([0.0 1.0+0.0im; 1.0+0.0im 0.0])
@@ -149,13 +150,8 @@ end
 σ3= vcat(ones(M), -ones(M))
 
 #小山さんの論文のΩnk
-function omega_nk(J,h,n,kx,ky,MF)
+function omega_nk(J,h,n,kx,ky,MF,Hevals,Hevecs,Aevals,Aevecs,Bevals,Bevecs,Cevals,Cevecs,w,U)
     k = [kx, ky]
-    Hevals, Hevecs = Partlal_Basis_hex(J,h,MF)
-    Aevals, Aevecs = Partial_basis_ABCsite(J,h,MF,"A")
-    Bevals, Bevecs = Partial_basis_ABCsite(J,h,MF,"B")
-    Cevals, Cevecs = Partial_basis_ABCsite(J,h,MF,"C")
-    w,U = BogoliubovModule.Bogoliubov(cal_Kernel(J,h,MF,k,Hevals, Hevecs, Aevals, Aevecs, Bevals,Bevecs,Cevals,Cevecs))
     sum = 0.0
     UX = U'*Bibun_Kernel_x(J,h,MF,k, Hevecs,Aevecs,Bevecs, Cevecs)*U
     UY = U'*Bibun_Kernel_y(J,h,MF,k, Hevecs,Aevecs,Bevecs, Cevecs)*U
@@ -173,7 +169,7 @@ function omega_nk(J,h,n,kx,ky,MF)
         =#
         else
             #sum += imag((σ3[n]*σ3[m]*UX[n, m]*UY[m, n]) / (σ3[m]*w[m]-σ3[n]*w[n])^2)
-            sum += imag((σ3[n]*σ3[m]*UX[n, m]*UY[m, n]) / ((w[m]-w[n])^2)+η^2)
+            sum += imag((σ3[n]*σ3[m]*UX[n, m]*UY[m, n]) / ((w[m]-w[n])^2 + η^2))
         end
     end
 
@@ -184,11 +180,17 @@ end
 
 
 function kappa_xy(J,h,T,MF)
-    println("h:",h, " T:", T)
+    println("h:",h, " T:", T, " threads:", nthreads())
+    Hevals, Hevecs = Partlal_Basis_hex(J,h,MF)
+    Aevals, Aevecs = Partial_basis_ABCsite(J,h,MF,"A")
+    Bevals, Bevecs = Partial_basis_ABCsite(J,h,MF,"B")
+    Cevals, Cevecs = Partial_basis_ABCsite(J,h,MF,"C")
     c2omega = (kx,ky) -> begin
+        k = [kx, ky]
+        w,U = BogoliubovModule.Bogoliubov(cal_Kernel(J,h,MF,k,Hevals, Hevecs, Aevals, Aevecs, Bevals,Bevecs,Cevals,Cevecs))
         sum =0.0
         for n in 1:M
-            ω, wlist = omega_nk(J,h,n,kx,ky,MF)
+            ω, wlist = omega_nk(J,h,n,kx,ky,MF,Hevals,Hevecs,Aevals,Aevecs,Bevals,Bevecs,Cevals,Cevecs,w,U)
             x = real(BoseModule.Bose(wlist[n],T))
             sum += (C2hokanModule.c2(x)-pi^2/3)*ω #発散をpi^2/3が抑制 これどうなの？
             #println("c2(x):",c2(x), " ω:", ω)

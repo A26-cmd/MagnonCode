@@ -9,7 +9,7 @@ const para = range(-1/2,1/2,N_k+1)[2:end]
 const Δn = para[2]-para[1]
 
 using LinearAlgebra
-using .Threads
+using Base.Threads
 
 # a=1とする。
 function Brillouin_sum(f)
