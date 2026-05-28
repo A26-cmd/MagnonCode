@@ -3,7 +3,6 @@ module Magnonbandmodule
 export Partlal_Basis_hex
 export Partial_basis_ABCsite
 export Kernel_J
-export cal_Kernel
 
 
 include("Bogoliubov.jl")
@@ -82,26 +81,24 @@ function Partlal_Basis_hex(J,h,MF)
         H += S_idotS_j_op(i,i+1,J)
     end
     H+= S_idotS_j_op(0,5,J)
-    for i in 0:5
-        H+= x_op(0,(MF[9]+MF[12])*J)+
-            y_op(0,(MF[10]+MF[13])*J)+
-            z_op(0,(MF[11]+MF[14])*J-h)+
-            x_op(1,(MF[9]+MF[15])*J)+
-            y_op(1,(MF[10]+MF[16])*J)+
-            z_op(1,(MF[11]+MF[17])*J-h)+
-            x_op(2,(MF[12]+MF[15])*J)+
-            y_op(2,(MF[13]+MF[16])*J)+
-            z_op(2,(MF[14]+MF[17])*J-h)+
-            x_op(3,(MF[9]+MF[12])*J)+
-            y_op(3,(MF[10]+MF[13])*J)+
-            z_op(3,(MF[11]+MF[14])*J-h)+
-            x_op(4,(MF[9]+MF[15])*J)+
-            y_op(4,(MF[10]+MF[16])*J)+
-            z_op(4,(MF[11]+MF[17])*J-h)+
-            x_op(5,(MF[12]+MF[15])*J)+
-            y_op(5,(MF[13]+MF[16])*J)+
-            z_op(5,(MF[14]+MF[17])*J-h)
-    end
+    H+= x_op(0,(MF[9]+MF[12])*J)+
+        y_op(0,(MF[10]+MF[13])*J)+
+        z_op(0,(MF[11]+MF[14])*J-h)+
+        x_op(1,(MF[9]+MF[15])*J)+
+        y_op(1,(MF[10]+MF[16])*J)+
+        z_op(1,(MF[11]+MF[17])*J-h)+
+        x_op(2,(MF[12]+MF[15])*J)+
+        y_op(2,(MF[13]+MF[16])*J)+
+        z_op(2,(MF[14]+MF[17])*J-h)+
+        x_op(3,(MF[9]+MF[12])*J)+
+        y_op(3,(MF[10]+MF[13])*J)+
+        z_op(3,(MF[11]+MF[14])*J-h)+
+        x_op(4,(MF[9]+MF[15])*J)+
+        y_op(4,(MF[10]+MF[16])*J)+
+        z_op(4,(MF[11]+MF[17])*J-h)+
+        x_op(5,(MF[12]+MF[15])*J)+
+        y_op(5,(MF[13]+MF[16])*J)+
+        z_op(5,(MF[14]+MF[17])*J-h)
     evals, evecs = eigen(H)
     return evals, evecs
 end
